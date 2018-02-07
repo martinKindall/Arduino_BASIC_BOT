@@ -104,11 +104,14 @@ static unsigned char keywords[] = {
 	'D','E','L','A','Y'+0x80,
 	'P','I','N','M','O','D','E'+0x80,
 	'P','W','M'+0x80,
-        'E','C','H','A','I','N'+0x80,
-        'E','L','I','S','T'+0x80,
-        'E','L','O','A','D'+0x80,
-        'E','F','O','R','M','A','T'+0x80,
-        'E','S','A','V','E'+0x80,
+    'E','C','H','A','I','N'+0x80,
+    'E','L','I','S','T'+0x80,
+    'E','L','O','A','D'+0x80,
+    'E','F','O','R','M','A','T'+0x80,
+    'E','S','A','V','E'+0x80,
+    'P','R','E','N','D','E'+0x80,
+    'A','P','A','G','A'+0x80,
+    'E','S','P','E','R', 'A'+0x80,
 	0
 };
 
@@ -134,12 +137,15 @@ static unsigned char keywords[] = {
 #define KW_DELAY	19
 #define KW_PINMODE	20
 #define KW_PWM		21
-#define KW_ECHAIN       22
-#define KW_ELIST        23
-#define KW_ELOAD        24
-#define KW_EFORMAT      25
-#define KW_ESAVE        26
-#define KW_DEFAULT	27
+#define KW_ECHAIN   22
+#define KW_ELIST    23
+#define KW_ELOAD    24
+#define KW_EFORMAT  25
+#define KW_ESAVE    26
+#define KW_PRENDE   27
+#define KW_APAGA    28
+#define KW_ESPERA    29
+#define KW_DEFAULT	30
 
 
 struct stack_for_frame {
@@ -861,16 +867,16 @@ interperateAtTxtpos:
 
 	switch(table_index)
 	{       
-                case KW_EFORMAT:
-                  goto eformat;
-                case KW_ESAVE:
-                  goto esave;
-                case KW_ELOAD:
-                  goto eload;
-                case KW_ELIST:
-                  goto elist;
-                case KW_ECHAIN:
-                  goto echain;
+        case KW_EFORMAT:
+          goto eformat;
+        case KW_ESAVE:
+          goto esave;
+        case KW_ELOAD:
+          goto eload;
+        case KW_ELIST:
+          goto elist;
+        case KW_ECHAIN:
+          goto echain;
 		case KW_LIST:
 			goto list;
 		case KW_LOAD:
@@ -939,6 +945,12 @@ interperateAtTxtpos:
 			goto delayT;
 		case KW_PWM:
 			goto doPWM;
+		case KW_PRENDE:
+			goto prende_led;
+		case KW_APAGA:
+			goto apaga_led;
+		case KW_ESPERA:
+			goto delayT;
 		case KW_DEFAULT:
 			goto assignment;
 		default:
@@ -1458,6 +1470,14 @@ print:
 			goto syntaxerror;	
 	}
 	goto run_next_statement;
+
+prende_led: 
+	digitalWrite(19,HIGH);
+	goto run_next_statement;
+
+apaga_led: 
+	digitalWrite(19,LOW);
+	goto run_next_statement;
 }
 
 /***************************************************************************/
@@ -1533,97 +1553,26 @@ static void outchar(unsigned char c)
   if( inhibitOutput ) return;
   if( outStream == kStreamEEProm ) {
       EEPROM.write( eepos++, c );
-    }
-    else{
-  //Serial.write(c);
-  char x=c;
-  GLCD.print(x);
-    }
-//	lcdChar(c);
-
-
+  }
+  else{
+  	char x=c;
+  	GLCD.print(x);
+  }
 #else
 	putch(c);
 #endif
 }
-/*
-static void lcdChar(byte c) {
 
-	if (c == 8) {	//Backspace?
-	
-		if (cursorX > 0) {
-	
-			cursorX -= 1;	//Go back one
-			screenMem[56 + cursorX] = 32;	//Erase it from memory
-			doFrame(56 + cursorX); //Redraw screen up to that amount
-			
-		}
-	
-	}
-
-	if (c != 13 and c != 10 and c != 8) {	//Not a backspace or return, just a normal character
-	
-		screenMem[56 + cursorX] = c;
-		cursorX += 1;
-		if (cursorX < 16) {
-		
-		lcd.write(c);
-		
-		}
-		
-	}
-	
-	if (cursorX == 16 or c == 10) {			//Did we hit Enter or go type past the end of a visible line?
-	
-		for (int xg = 0 ; xg < 16 ; xg++) {
-
-			screenMem[0 + xg] = screenMem[40 + xg];
-			screenMem[40 + xg] = screenMem[16 + xg];		
-			screenMem[16 + xg] = screenMem[56 + xg];
-			screenMem[56 + xg] = 32;
-		
-		
-		}
-	
-		cursorX = 0;
-		
-		doFrame(56);	
-
-	}
-
-
-}
-*/
-/*
-static void doFrame(byte amount) {
-
-	lcd.clear();
-	lcd.noCursor();
-		
-	for (int xg = 0 ; xg < amount ; xg++) {
-	
-		lcd.write(screenMem[xg]);
-	}
-
-	lcd.cursor();
-
-}
-*/
 #ifdef ARDUINO
 /***********************************************************/
 
-
-
-
-
-
 void setup()
 {
-  	//Serial.begin(19200);	// opens serial port, sets data rate to 9600 bps
-	//lcd.begin(16, 4);
         keyboard.begin(DataPin, IRQpin, PS2Keymap_CUSTOM);
         GLCD.Init();
         GLCD.SelectFont(SystemFont5x7);
+
+        // pin for wheels
         pinMode(13,OUTPUT);
         pinMode(2,OUTPUT);
         pinMode(0,OUTPUT);
@@ -1632,15 +1581,10 @@ void setup()
         digitalWrite(1,LOW);
         digitalWrite(13,LOW);
         digitalWrite(2,LOW);
-        //GLCD.println("Hola Mundo!");
-	/*for (int xg = 0 ; xg < 72 ; xg++) {
-		screenMem[xg] = 32;
-	}
-*/
-//	lcd.blink();
-	
-//	doFrame(56);
-		
+
+        // led pin
+        pinMode(19,OUTPUT);
+        digitalWrite(19,LOW);
 }
 #endif
 
