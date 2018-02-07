@@ -1621,7 +1621,7 @@ void setup()
 {
   	//Serial.begin(19200);	// opens serial port, sets data rate to 9600 bps
 	//lcd.begin(16, 4);
-        keyboard.begin(DataPin, IRQpin);
+        keyboard.begin(DataPin, IRQpin, PS2Keymap_CUSTOM);
         GLCD.Init();
         GLCD.SelectFont(SystemFont5x7);
         pinMode(13,OUTPUT);
