@@ -16,6 +16,13 @@
 #include <glcd.h>
 #include <fonts/allFonts.h>
 #include <EEPROM.h>
+
+//inlcuir bitmaps
+#include "bitmaps/thonka1.h"
+#include "bitmaps/andres.h"
+#include "bitmaps/familia.h"
+#include "bitmaps/hermanos.h"
+
 int eepos = 0;
 int val;
 boolean inhibitOutput = false;
@@ -112,6 +119,7 @@ static unsigned char keywords[] = {
     'P','R','E','N','D','E'+0x80,
     'A','P','A','G','A'+0x80,
     'E','S','P','E','R', 'A'+0x80,
+    'F','O','T','O','S'+0x80,
 	0
 };
 
@@ -144,8 +152,9 @@ static unsigned char keywords[] = {
 #define KW_ESAVE    26
 #define KW_PRENDE   27
 #define KW_APAGA    28
-#define KW_ESPERA    29
-#define KW_DEFAULT	30
+#define KW_ESPERA   29
+#define KW_FOTOS    30
+#define KW_DEFAULT	31
 
 
 struct stack_for_frame {
@@ -951,6 +960,8 @@ interperateAtTxtpos:
 			goto apaga_led;
 		case KW_ESPERA:
 			goto delayT;
+		case KW_FOTOS:
+			goto display_photos;
 		case KW_DEFAULT:
 			goto assignment;
 		default:
@@ -1478,6 +1489,22 @@ prende_led:
 apaga_led: 
 	digitalWrite(19,LOW);
 	goto run_next_statement;
+
+display_photos:
+	GLCD.ClearScreen();
+    GLCD.DrawBitmap(familia,5,0);
+    delay(4000);
+    GLCD.ClearScreen();
+    GLCD.DrawBitmap(thonka1,5,0);
+    delay(4000);
+    GLCD.ClearScreen();
+    GLCD.DrawBitmap(andres,5,0);
+    delay(4000);
+    GLCD.ClearScreen();
+    GLCD.DrawBitmap(hermanos,5,0);
+    delay(4000);
+    GLCD.ClearScreen();
+    goto run_next_statement;
 }
 
 /***************************************************************************/
