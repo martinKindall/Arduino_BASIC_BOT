@@ -120,6 +120,11 @@ static unsigned char keywords[] = {
     'A','P','A','G','A'+0x80,
     'E','S','P','E','R', 'A'+0x80,
     'F','O','T','O','S'+0x80,
+    'I','Z','Q'+0x80,
+    'D','E','R'+0x80,
+    'R','E','T'+0x80,
+    'A','V','A'+0x80,
+    'S','T','O','P'+0x80,
 	0
 };
 
@@ -154,7 +159,12 @@ static unsigned char keywords[] = {
 #define KW_APAGA    28
 #define KW_ESPERA   29
 #define KW_FOTOS    30
-#define KW_DEFAULT	31
+#define KW_IZQ    31
+#define KW_DER    32
+#define KW_RET    33
+#define KW_AVA    34
+#define KW_STOP_CAR    35
+#define KW_DEFAULT	36
 
 
 struct stack_for_frame {
@@ -962,6 +972,16 @@ interperateAtTxtpos:
 			goto delayT;
 		case KW_FOTOS:
 			goto display_photos;
+		case KW_IZQ:
+			goto turn_left;
+		case KW_DER:
+			goto turn_right;
+		case KW_RET:
+			goto go_backward;
+		case KW_AVA:
+			goto go_forward;
+		case KW_STOP_CAR:
+			goto stop_car;
 		case KW_DEFAULT:
 			goto assignment;
 		default:
@@ -1505,6 +1525,38 @@ display_photos:
     delay(4000);
     GLCD.ClearScreen();
     goto run_next_statement;
+
+stop_car:
+	digitalWrite(0, LOW);
+	digitalWrite(1, LOW);
+	digitalWrite(2, LOW);
+	digitalWrite(13, LOW);
+	delay(500);
+	goto run_next_statement;
+
+turn_left:
+	digitalWrite(0, HIGH);
+	digitalWrite(2, HIGH);
+	delay(500);
+	goto stop_car;
+
+turn_right:
+	digitalWrite(1, HIGH);
+	digitalWrite(13, HIGH);
+	delay(500);
+	goto stop_car;
+
+go_forward:
+	digitalWrite(1, HIGH);
+	digitalWrite(2, HIGH);
+	delay(1000);
+	goto stop_car;
+
+go_backward:
+	digitalWrite(0, HIGH);
+	digitalWrite(13, HIGH);
+	delay(1000);
+	goto stop_car;
 }
 
 /***************************************************************************/
